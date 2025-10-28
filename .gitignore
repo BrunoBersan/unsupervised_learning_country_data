@@ -1,0 +1,18 @@
+venv/
+.venv/
+env/
+.env/
+__pycache__/
+*.pyc
+*.pyd
+ 
+*~
+*.bak
+*.log
+.DS_Store # Mac
+Thumbs.db # Windows 
+  
+kaggle.json
+*.csv
+*.zip
+.ipynb_checkpoints/
