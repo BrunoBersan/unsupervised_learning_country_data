@@ -1,126 +1,201 @@
-# Clusterização de Países: Análise Socioeconômica
+# Projeto de Clusterização de Países com Algoritmos de Aprendizado Não Supervisionado
 
-Este projeto utiliza diversas técnicas de **Aprendizado Não Supervisionado** (Clustering) para agrupar países com base em indicadores de saúde, economia e desenvolvimento. O objetivo principal é identificar padrões de similaridade entre as nações, classificando-as em grupos como "Desenvolvidos", "Em Desenvolvimento" e "Subdesenvolvidos".
+## Autor
 
-## Tecnologias e Bibliotecas
-
-| Categoria | Pacotes |
-| :--- | :--- |
-| **Linguagem** | Python (versão 3.11.14) |
-| **Gerenciamento** | `requirements.txt` (exportado via `!pip freeze`) |
-| **Aquisição de Dados** | `kaggle` |
-| **Manipulação/Análise** | `pandas`, `numpy` |
-| **Visualização** | `matplotlib.pyplot`, `seaborn` |
-| **Pré-processamento** | `sklearn.preprocessing.StandardScaler` |
-| **Algoritmos de Clustering** | `sklearn.cluster.KMeans`, `scipy.cluster.hierarchy` (Hierárquico), `sklearn.cluster.DBSCAN` |
+**Bruno Adalberto dos Santos**
 
 ---
 
-## Conjunto de Dados
+## 1. Descrição do Projeto
 
-O dataset utilizado, **"Unsupervised Learning on Country Data"** (`Country-data.csv`), foi obtido diretamente da API do Kaggle.
+Este projeto tem como objetivo aplicar técnicas de **aprendizado não supervisionado** para agrupar países com base em indicadores socioeconômicos e de saúde, identificando padrões de desenvolvimento e vulnerabilidade global.
+A análise foi conduzida em Python, utilizando os algoritmos **K-Means**, **Clusterização Hierárquica**, **K-Medoids** e **DBSCAN**, com o objetivo de comparar os resultados e interpretar a consistência entre os métodos.
 
-* **Fonte:** `rohan0301/unsupervised-learning-on-country-data`
-* **Estrutura:** 167 entradas e 10 colunas. Não foram encontrados valores ausentes ou duplicados na análise inicial.
-
-### Descrição das Variáveis
-
-A análise é baseada nas seguintes *features* socioeconômicas:
-
-| Variável | Descrição |
-| :--- | :--- |
-| **country** | Nome do país. |
-| **child_mort** | Mortes de crianças menores de 5 anos por 1.000 nascidos vivos. |
-| **exports** | Exportações de bens e serviços (% do PIB per capita). |
-| **health** | Gastos totais em saúde (% do PIB per capita). |
-| **imports** | Importações de bens e serviços (% do PIB per capita). |
-| **income** | Renda líquida per capita (USD). |
-| **inflation** | Taxa anual de crescimento do PIB (%). |
-| **life_expec** | Expectativa de vida ao nascer (anos). |
-| **total_fer** | Número médio de filhos por mulher. |
-| **gdpp** | PIB per capita (USD). |
+Os dados foram obtidos do Kaggle, a partir do conjunto:
+[Unsupervised Learning on Country Data](https://www.kaggle.com/datasets/rohan0301/unsupervised-learning-on-country-data)
 
 ---
 
-## Metodologia e Processamento
+## 2. Infraestrutura do Projeto
 
-### 1. Pré-processamento e Escalonamento
+**Ambiente de Desenvolvimento:**
 
-A etapa de **clusterização** é sensível à escala dos dados. A análise de boxplot inicial demonstrou uma grande **faixa dinâmica de valores** e a presença de **outliers**, o que poderia distorcer as métricas de distância (e.g., K-Means).
+* Linguagem: Python 3.9+
+* Ambiente Virtual: Anaconda (ou Virtualenv)
+* IDE: Visual Studio Code
+* Repositório: [https://github.com/BrunoBersan/unsupervised_learning_country_data](https://github.com/BrunoBersan/unsupervised_learning_country_data)
 
-* **Ação:** A coluna `country` foi removida, e os dados numéricos (`df_num`) foram **padronizados** (Standardization) utilizando o **`StandardScaler`** da Scikit-learn.
-* **Impacto:** O escalonamento garante que todas as variáveis tenham uma **influência equivalente** na determinação dos clusters.
+**Arquivo de Dependências:**
+O arquivo `requirements.txt` foi gerado automaticamente com:
 
----
-
-### 2. Algoritmos de Clusterização
-
-Foram aplicados quatro métodos para garantir a robustez dos resultados e fornecer diferentes perspectivas sobre a estrutura dos dados:
-
-#### A. K-Means (K=3)
-
-| Métrica | Cluster 0 (Desenvolvidos) | Cluster 1 (Subdesenv.) | Cluster 2 (Intermediários) |
-| :--- | :--- | :--- | :--- |
-| **Países** | 36 | 47 | 84 |
-| **child_mort** | 5.00 | **92.96** | 21.93 |
-| **income** | **45672.22** | 3942.40 | 12305.60 |
-| **life_expec** | **80.13** | 59.19 | 72.81 |
-| **total_fer** | 1.75 | **5.01** | 2.31 |
-| **gdpp** | **42494.44** | 1922.38 | 6486.45 |
-
-#### B. Hierárquico (Ward Linkage)
-
-O dendrograma foi utilizado para visualizar a similaridade hierárquica e sugerir um corte em **3 grupos principais**.
-
-#### C. K-Medoids (Simulação de PAM, K=3)
-
-Este método é uma variação do K-Means mais robusta a *outliers*, utilizando **medoides** (pontos reais do dataset) em vez de centróides (pontos médios).
-
-* **Países Representativos (Medoides Finais):**
-    * **Cluster 0:** Kiribati
-    * **Cluster 1:** Ghana
-    * **Cluster 2:** Poland
-
-#### D. DBSCAN (Density-Based Spatial Clustering of Applications with Noise)
-
-O DBSCAN agrupa pontos baseados em densidade, identificando automaticamente clusters de formato arbitrário e, crucialmente, marcando **outliers** como ruído (Cluster -1).
-
-* **Parâmetros:** `eps=0.5`, `min_samples=5`.
-* **Resultados:** Identificou **3 grupos densos** (Clusters 0, 1 e 2) e um grupo de **outliers** (-1).
+```bash
+!pip freeze > requirements.txt
+```
 
 ---
 
-## Perfis dos Clusters (DBSCAN - Sem Outliers)
+## 3. Estrutura do Dataset
 
-Os resultados do DBSCAN confirmam os **três grupos socioeconômicos principais** e fornecem perfis claros (as métricas a seguir são médias por cluster, com `income` e `gdpp` em USD):
+O dataset contém **167 países**, descritos pelas seguintes variáveis:
 
-### 1. Cluster 0 – Países Subdesenvolvidos (Pobreza Extrema) 
-
-* **País mais representativo:** 🇲🇿 Mozambique
-* **Características:** Alta **mortalidade infantil (94,19)** e **fertilidade (5,34)**. Baixa **renda (2.039,22 USD)**, **PIB per capita (811,74 USD)** e **expectativa de vida (59,40 anos)**.
-* **Análise:** Grupo com os piores indicadores, representando países com **pobreza severa**, alta dependência de **importações** e grandes desafios de desenvolvimento humano.
-
-### 2. Cluster 1 – Países em Desenvolvimento (Situação Intermediária) 
-
-* **País mais representativo:** 🇸🇻 El Salvador
-* **Características:** Mortalidade infantil e fertilidade **moderadas**. Renda e PIB per capita **intermediárias**.
-* **Análise:** Países com indicadores de desenvolvimento **melhores que o Cluster 0**, mas **significativamente abaixo do Cluster 2**. Demonstram investimentos em **educação, saúde e exportações**, mas ainda enfrentando desafios de **renda e produtividade**.
-
-### 3. Cluster 2 – Países Desenvolvidos 
-
-* **País mais representativo:** 🇬🇧 United Kingdom
-* **Características:** Baixa **mortalidade infantil (4,17)** e **fertilidade (1,80)**. Alta **renda (37.338,89 USD)**, **PIB per capita (41.150,00 USD)** e **expectativa de vida (81,01 anos)**.
-* **Análise:** Este grupo representa países **desenvolvidos**, com **alta renda**, forte **investimento social** e **estabilidade econômica**. O **Reino Unido** reflete bem o centro do grupo.
+| Variável     | Descrição                                       |
+| ------------ | ----------------------------------------------- |
+| `country`    | Nome do país                                    |
+| `child_mort` | Mortalidade infantil (por 1.000 nascidos vivos) |
+| `exports`    | Exportações (% do PIB per capita)               |
+| `health`     | Gastos totais em saúde (% do PIB per capita)    |
+| `imports`    | Importações (% do PIB per capita)               |
+| `income`     | Renda líquida per capita (USD)                  |
+| `inflation`  | Taxa anual de crescimento do PIB (%)            |
+| `life_expec` | Expectativa de vida ao nascer (anos)            |
+| `total_fer`  | Número médio de filhos por mulher               |
+| `gdpp`       | PIB per capita (USD)                            |
 
 ---
 
-## Comparação de Métodos
+## 4. Pré-Processamento dos Dados
 
-Todos os métodos identificaram **três grupos socioeconômicos principais**, com perfis muito semelhantes.
+Antes da aplicação dos algoritmos de clusterização, foram realizadas as seguintes etapas:
 
-* **Tamanho dos Grupos:**
-    * **K-Means:** Grupos mais equilibrados (36, 47 e 84 países).
-    * **Hierárquico (Ward):** Grupos com maior variância (106, 34 e 27 países), mostrando uma fusão mais ampla de países intermediários.
-    * **DBSCAN:** Identificou 3 clusters (96, 62 e 9 países) + outliers.
-* **Consistência:** A correspondência entre os clusters é **alta** (validação cruzada implícita, como a média de `Cluster_KMeans` dentro dos grupos Hierárquicos sendo **0.18, 1.00 e 1.72**).
-* **Vantagens:** O método hierárquico oferece uma **visão mais interpretável e visual (dendrograma)**, enquanto o K-Means é **mais direto e eficiente computacionalmente**. O DBSCAN, por sua vez, é excelente para identificar **outliers**.
+1. **Limpeza dos Dados:** remoção de valores ausentes e duplicados.
+2. **Seleção de Variáveis:** apenas variáveis numéricas foram mantidas.
+3. **Normalização:** escalonamento dos dados com `StandardScaler`.
+4. **Tratamento de Outliers:** análise via boxplots e estatística descritiva.
+5. **Análise da Distribuição:** avaliação da adequação dos dados para métodos baseados em distância.
+
+---
+
+## 5. Algoritmos de Clusterização
+
+### 5.1. K-Means
+
+Método particional que busca minimizar a distância média dos pontos em relação aos centróides.
+Foi configurado para **3 clusters** e converge quando o deslocamento médio dos centróides é mínimo.
+
+### 5.2. Clusterização Hierárquica
+
+Método baseado em fusões sucessivas (linkage **Ward**), gerando um dendrograma que mostra as relações de similaridade entre os países.
+
+### 5.3. K-Medoids
+
+Variação do K-Means em que o centro de cada grupo é um **ponto real do conjunto de dados (medoide)**, o que melhora a interpretabilidade e reduz a influência de outliers.
+
+### 5.4. DBSCAN (Density-Based Spatial Clustering of Applications with Noise)
+
+O DBSCAN forma clusters com base na **densidade local dos pontos**, agrupando regiões densas e marcando como ruído os pontos isolados.
+Parâmetros principais:
+
+* `eps`: raio máximo de vizinhança.
+* `min_samples`: número mínimo de pontos em uma vizinhança para formar um cluster.
+
+**Vantagens do DBSCAN:**
+
+* Não requer definir o número de clusters a priori.
+* Identifica automaticamente **outliers (ruído)**.
+* Funciona bem com clusters de formas arbitrárias.
+* É **mais robusto a outliers** que K-Means, pois não depende da média.
+
+---
+
+## 6. Resultados da Clusterização
+
+### 6.1. K-Means
+
+| Cluster | Descrição                                                                                       | País Representativo |
+| ------- | ----------------------------------------------------------------------------------------------- | ------------------- |
+| **0**   | Países desenvolvidos, com alta renda, baixa mortalidade infantil e elevada expectativa de vida. | Iceland             |
+| **1**   | Países em vulnerabilidade socioeconômica, com alta mortalidade infantil e baixa renda.          | Guinea              |
+| **2**   | Economias emergentes, com rendas intermediárias e transição social.                             | Jamaica             |
+
+---
+
+### 6.2. Clusterização Hierárquica
+
+| Cluster | Descrição            | País Representativo |
+| ------- | -------------------- | ------------------- |
+| **0**   | Países desenvolvidos | Poland              |
+| **1**   | Países vulneráveis   | Ghana               |
+| **2**   | Economias emergentes | Kiribati            |
+
+---
+
+### 6.3. K-Medoids
+
+| Cluster | Descrição                                | País Representativo |
+| ------- | ---------------------------------------- | ------------------- |
+| **0**   | Países em vulnerabilidade socioeconômica | Mozambique          |
+| **1**   | Economias emergentes                     | El Salvador         |
+| **2**   | Países desenvolvidos                     | United Kingdom      |
+
+---
+
+### 6.4. DBSCAN
+
+O DBSCAN identificou **três grandes grupos principais** e **um conjunto de outliers** (países com características muito distintas, como renda extremamente alta ou baixa).
+Por não exigir número fixo de clusters, o algoritmo capturou nuances adicionais nas regiões de transição entre economias.
+
+**Principais observações:**
+
+* Países com perfis muito distintos (ex: Luxemburgo, Somália) foram classificados como ruído, o que melhora a consistência dos agrupamentos restantes.
+* O DBSCAN apresentou **grande robustez a outliers** e produziu clusters coerentes com os de K-Means, porém com fronteiras mais flexíveis.
+* A distribuição espacial dos clusters mostrou padrões semelhantes aos demais métodos, reforçando a validade da estrutura global dos dados.
+
+---
+
+## 7. Interpretação dos Clusters
+
+### Cluster 0 – Países Vulneráveis
+
+Alta mortalidade infantil, baixa renda e expectativa de vida, elevada fertilidade e inflação.
+**Exemplo:** *Mozambique*
+
+### Cluster 1 – Economias Emergentes
+
+Renda e expectativa de vida intermediárias, mortalidade infantil moderada, inflação controlada.
+**Exemplo:** *El Salvador*
+
+### Cluster 2 – Países Desenvolvidos
+
+Alta renda, baixa mortalidade e fertilidade, elevada expectativa de vida e alto investimento em saúde.
+**Exemplo:** *United Kingdom*
+
+---
+
+## 8. Comparação entre os Métodos
+
+| Critério                        | K-Means  | Hierárquico             | K-Medoids           | DBSCAN      |
+| ------------------------------- | -------- | ----------------------- | ------------------- | ----------- |
+| **Equilíbrio dos grupos**       | Moderado | Menos equilibrado       | Desequilibrado      | Adaptativo  |
+| **Forma dos clusters**          | Esférica | Hierárquica             | Baseada em medoides | Arbitrária  |
+| **Número de clusters definido** | Sim      | Sim                     | Sim                 | Não         |
+| **Sensibilidade a outliers**    | Alta     | Média                   | Baixa               | Muito baixa |
+| **Interpretação visual**        | Boa      | Excelente (dendrograma) | Alta                | Média       |
+| **Robustez estrutural**         | Alta     | Alta                    | Alta                | Muito alta  |
+
+---
+
+## 9. Considerações Finais
+
+* Todos os métodos identificaram **padrões socioeconômicos coerentes**.
+* O **K-Means** mostrou eficiência, mas sensibilidade a outliers.
+* O **Hierárquico** se destacou na visualização das relações entre países.
+* O **K-Medoids** trouxe clareza interpretativa, por usar países reais como centros.
+* O **DBSCAN** apresentou **maior robustez a ruído** e revelou **estruturas complexas** que os outros métodos não capturaram.
+
+A análise reforça que a clusterização não supervisionada é uma ferramenta poderosa para **entendimento de padrões globais de desenvolvimento**, permitindo insights claros sobre desigualdade e crescimento entre nações.
+
+---
+
+## 10. Repositório e Reprodutibilidade
+
+Repositório público com o código, notebook e artefatos:
+[https://github.com/BrunoBersan/unsupervised_learning_country_data](https://github.com/BrunoBersan/unsupervised_learning_country_data)
+
+Para executar o projeto:
+
+```bash
+git clone https://github.com/BrunoBersan/unsupervised_learning_country_data
+cd unsupervised_learning_country_data
+pip install -r requirements.txt
+jupyter notebook analise.ipynb
+``` 
